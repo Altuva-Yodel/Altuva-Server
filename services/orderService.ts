@@ -6,10 +6,17 @@ import { calculateCart, clearCart } from './cartService';
 
 const { orders, orderItems, products, customerUsers, addresses } = schema;
 
-const razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID!,
-    key_secret: process.env.RAZORPAY_KEY_SECRET!,
-});
+// Lazy-initialized so dotenv.config() in server.ts runs before keys are read
+let _razorpay: Razorpay | null = null;
+const getRazorpay = () => {
+    if (!_razorpay) {
+        _razorpay = new Razorpay({
+            key_id: process.env.RAZORPAY_KEY_ID!,
+            key_secret: process.env.RAZORPAY_KEY_SECRET!,
+        });
+    }
+    return _razorpay;
+};
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -47,7 +54,7 @@ export const createRazorpayOrder = async (customerId: number, addressId: number)
     }
 
     // Create Razorpay order (amount in paise)
-    const rzpOrder = await razorpay.orders.create({
+    const rzpOrder = await getRazorpay().orders.create({
         amount: Math.round(summary.grand_total * 100),
         currency: 'INR',
         receipt: generateOrderNumber(),
