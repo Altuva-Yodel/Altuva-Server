@@ -1,0 +1,9 @@
+services:
+  server:
+    build: .
+    container_name: altuva-server
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    restart: unless-stopped

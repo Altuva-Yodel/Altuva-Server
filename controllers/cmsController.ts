@@ -22,7 +22,7 @@ export const getAllBanners = async (req: Request, res: Response): Promise<void> 
         res.status(500).json({
             success: false,
             message: 'Failed to fetch banners',
-            error: error instanceof Error ? error.message : 'Unknown error',
+            error: error instanceof Error ? error.message : JSON.stringify(error),
         });
     }
 };
@@ -40,7 +40,7 @@ export const getActiveBanners = async (req: Request, res: Response): Promise<voi
         res.status(500).json({
             success: false,
             message: 'Failed to fetch active banners',
-            error: error instanceof Error ? error.message : 'Unknown error',
+            error: error instanceof Error ? error.message : JSON.stringify(error),
         });
     }
 };
@@ -68,7 +68,7 @@ export const getBannerById = async (req: Request, res: Response): Promise<void> 
         res.status(500).json({
             success: false,
             message: 'Failed to fetch banner',
-            error: error instanceof Error ? error.message : 'Unknown error',
+            error: error instanceof Error ? error.message : JSON.stringify(error),
         });
     }
 };
@@ -112,7 +112,7 @@ export const createBanner = async (req: Request, res: Response): Promise<void> =
         res.status(500).json({
             success: false,
             message: 'Failed to create banner',
-            error: error instanceof Error ? error.message : 'Unknown error',
+            error: error instanceof Error ? error.message : JSON.stringify(error),
         });
     }
 };
@@ -154,7 +154,7 @@ export const updateBannerById = async (req: Request, res: Response): Promise<voi
         res.status(500).json({
             success: false,
             message: 'Failed to update banner',
-            error: error instanceof Error ? error.message : 'Unknown error',
+            error: error instanceof Error ? error.message : JSON.stringify(error),
         });
     }
 };
@@ -207,7 +207,7 @@ export const deleteBannerById = async (req: Request, res: Response): Promise<voi
         res.status(500).json({
             success: false,
             message: 'Failed to delete banner',
-            error: error instanceof Error ? error.message : 'Unknown error',
+            error: error instanceof Error ? error.message : JSON.stringify(error),
         });
     }
 };
