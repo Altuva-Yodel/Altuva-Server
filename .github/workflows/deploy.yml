@@ -1,0 +1,88 @@
+name: Build & Deploy Altuva Server (PROD)
+
+on:
+  push:
+    branches:
+      - PROD
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Checkout Repository
+      - name: 🔄 Checkout Code
+        uses: actions/checkout@v4
+
+      # 2️⃣ Setup Node.js
+      - name: 🧰 Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # 3️⃣ Cache npm
+      - name: 📦 Cache NPM Dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      # 4️⃣ Install Dependencies
+      - name: 📥 Install Dependencies
+        run: npm ci
+
+      # 5️⃣ Build Project
+      - name: 🏗️ Build Project
+        run: npm run build
+
+      # 6️⃣ Copy migration files required at runtime
+      - name: 📂 Copy Migration Files
+        run: |
+          mkdir -p dist/db
+          cp -r db/drizzle-migrations dist/db/drizzle-migrations
+
+      # 7️⃣ Install Production Dependencies inside dist package
+      - name: 📦 Prepare Production Package
+        run: |
+          mkdir -p deploy
+          cp package*.json deploy/
+          cp -r dist deploy/dist
+
+          cd deploy
+          npm ci --omit=dev
+
+      # 8️⃣ Verify final artifact
+      - name: 🔍 Verify Deployment Package
+        run: tree -L 2 deploy/
+
+      # 9️⃣ Upload deploy package to server
+      - name: 🚚 Deploy to Server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: 178.18.249.255
+          port: 108
+          username: bhrtkswd
+          key: ${{ secrets.SSH_KEY }}
+          source: "deploy/**"
+          target: "/home/bhrtkswd/server.altuva.co.in/app"
+          strip_components: 1
+          rm: true
+
+      # 🔟 Restart Docker Container
+      - name: 🔄 Restart App Container
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: 178.18.249.255
+          port: 108
+          username: bhrtkswd
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /home/bhrtkswd/server.altuva.co.in/app
+
+            docker restart server-altuva
+
+      # 1️⃣1️⃣ Deployment Complete
+      - name: ✅ Deployment Complete
+        run: echo "Deployment to PROD complete!"
