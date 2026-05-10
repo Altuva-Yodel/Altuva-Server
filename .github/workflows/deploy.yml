@@ -3,7 +3,7 @@ name: Build & Deploy Altuva Server (PROD)
 on:
   push:
     branches:
-      - PROD
+      - main
 
 jobs:
   build-and-deploy:
