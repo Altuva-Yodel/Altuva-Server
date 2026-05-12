@@ -70,7 +70,18 @@ jobs:
           strip_components: 1
           rm: true
 
-      # 🔟 Restart Docker Container
+      # 🔟 Write .env file on Server
+      - name: ⚙️ Create .env on Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: 178.18.249.255
+          port: 108
+          username: bhrtkswd
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            echo "${{ secrets.ENV_FILE }}" > /home/bhrtkswd/server.altuva.co.in/.env
+
+      # 1️⃣1️⃣ Restart Docker Container
       - name: 🔄 Restart App Container
         uses: appleboy/ssh-action@v1.0.3
         with:

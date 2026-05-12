@@ -1,9 +1,30 @@
+version: "3.9"
+
 services:
-  server:
-    build: .
-    container_name: altuva-server
-    ports:
-      - "3000:3000"
-    env_file:
-      - .env
+  nodeapp:
+    image: node:22
+    container_name: server-altuva
+    working_dir: /app
+    
+    # Start command (no npm install at runtime)
+    command: node dist/server.js
+
     restart: unless-stopped
+
+    environment:
+      NODE_ENV: production
+      PORT: 9100
+      HOST: 127.0.0.1
+     
+
+
+    volumes:
+      - /home/bhrtkswd/server.altuva.co.in/app:/app
+
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:9100/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+    network_mode: host

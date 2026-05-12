@@ -26,7 +26,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // CORS Configuration
-const allowedOrigins = process.env.CORS_ORIGIN?.split(',');
+const allowedOrigins = process.env.CORS_ORIGIN?.split(',').map(o => o.trim());
 
 const corsOptions = {
     origin: allowedOrigins,
