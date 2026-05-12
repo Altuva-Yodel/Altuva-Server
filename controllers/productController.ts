@@ -8,11 +8,11 @@ import {
     deleteProductService,
     ProductFilters,
 } from '../services/productService';
-import { uploadToCloudinary, deleteFromCloudinary } from '../utils/cloudinary';
+import { uploadToCloudinary } from '../utils/cloudinary';
 
 // ─── Admin Controllers ────────────────────────────────────────────────────────
 
-export const getAllProductsAdmin = async (req: Request, res: Response): Promise<void> => {
+export const getAllProductsAdmin = async (_req: Request, res: Response): Promise<void> => {
     try {
         const { products } = await getAllProductsService({});
         res.status(200).json({ success: true, data: products });
@@ -81,20 +81,48 @@ export const createProduct = async (req: Request, res: Response): Promise<void> 
             return;
         }
 
+        const toStr = (val: any): string | undefined => val?.toString().trim() || undefined;
+        const toBool = (val: any): boolean => val === 'true' || val === true;
+        const toInt = (val: any, fallback = 0): number => parseInt(val) || fallback;
+
         const existingImages = req.body.images ? JSON.parse(req.body.images) : [];
 
         const product = await createProductService({
-            ...req.body,
+            name: req.body.name,
+            slug: req.body.slug,
+            brand: req.body.brand,
+            category: req.body.category,
+            sub_category: toStr(req.body.sub_category),
+            type: toStr(req.body.type),
+            price: req.body.price,
+            discounted_price: toStr(req.body.discounted_price),
+            discount_percentage: toStr(req.body.discount_percentage) ?? '0',
+            currency: toStr(req.body.currency) ?? 'INR',
+            stock: toInt(req.body.stock),
+            low_stock_threshold: toInt(req.body.low_stock_threshold, 5),
+            is_in_stock: toBool(req.body.is_in_stock),
+            sku: toStr(req.body.sku),
             primary_image,
-            secondary_image: uploaded.secondary_image || req.body.secondary_image,
-            stock: parseInt(req.body.stock ?? '0'),
+            secondary_image: uploaded.secondary_image || toStr(req.body.secondary_image),
             images: uploaded.images?.length ? uploaded.images : existingImages,
+            description: req.body.description,
+            detailed_description: toStr(req.body.detailed_description),
             key_features: req.body.key_features ? JSON.parse(req.body.key_features) : [],
             ingredients: req.body.ingredients ? JSON.parse(req.body.ingredients) : [],
             nutrition_info: req.body.nutrition_info ? JSON.parse(req.body.nutrition_info) : {},
+            shelf_life: toStr(req.body.shelf_life),
+            storage_instructions: toStr(req.body.storage_instructions),
+            care_instructions: toStr(req.body.care_instructions),
+            country_of_origin: toStr(req.body.country_of_origin),
             manufacturer: req.body.manufacturer ? JSON.parse(req.body.manufacturer) : {},
+            contact_email: toStr(req.body.contact_email),
+            contact_phone: toStr(req.body.contact_phone),
+            amazon_link: toStr(req.body.amazon_link),
             tags: req.body.tags ? JSON.parse(req.body.tags) : [],
             flavors: req.body.flavors ? JSON.parse(req.body.flavors) : [],
+            weight: toStr(req.body.weight),
+            is_active: toBool(req.body.is_active),
+            is_featured: toBool(req.body.is_featured),
         });
 
         res.status(201).json({ success: true, data: product });
