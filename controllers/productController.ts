@@ -68,6 +68,19 @@ export const createProduct = async (req: Request, res: Response): Promise<void> 
             return;
         }
 
+        const requiredFields: { field: string; label: string }[] = [
+            { field: 'name', label: 'Product Name' },
+            { field: 'brand', label: 'Brand' },
+            { field: 'category', label: 'Category' },
+            { field: 'price', label: 'Price' },
+            { field: 'description', label: 'Description' },
+        ];
+        const missing = requiredFields.filter(({ field }) => !req.body[field]?.toString().trim());
+        if (missing.length) {
+            res.status(400).json({ success: false, message: `Missing required fields: ${missing.map(f => f.label).join(', ')}` });
+            return;
+        }
+
         const existingImages = req.body.images ? JSON.parse(req.body.images) : [];
 
         const product = await createProductService({
@@ -86,7 +99,17 @@ export const createProduct = async (req: Request, res: Response): Promise<void> 
 
         res.status(201).json({ success: true, data: product });
     } catch (error) {
-        res.status(500).json({ success: false, message: error instanceof Error ? error.message : 'Server error' });
+        const isDbError = error instanceof Error && (
+            error.message.toLowerCase().includes('null value') ||
+            error.message.toLowerCase().includes('violates') ||
+            error.message.toLowerCase().includes('failed query') ||
+            error.message.toLowerCase().includes('unique constraint')
+        );
+        if (isDbError) {
+            res.status(400).json({ success: false, message: 'Failed to save product. Please check all required fields are filled in correctly.' });
+        } else {
+            res.status(500).json({ success: false, message: error instanceof Error ? error.message : 'Server error' });
+        }
     }
 };
 
