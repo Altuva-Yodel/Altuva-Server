@@ -147,24 +147,52 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
         const files = (req.files as Record<string, Express.Multer.File[]>) || {};
         const uploaded = await uploadProductFiles(files);
 
-        let updateData: any = { ...req.body };
+        const toStr = (val: any): string | undefined => val?.toString().trim() || undefined;
+        const toBool = (val: any): boolean => val === 'true' || val === true;
+        const toInt = (val: any, fallback = 0): number => parseInt(val) || fallback;
 
-        if (uploaded.primary_image) updateData.primary_image = uploaded.primary_image;
-        if (uploaded.secondary_image) updateData.secondary_image = uploaded.secondary_image;
+        const existingImages = req.body.images ? JSON.parse(req.body.images) : [];
+        const mergedImages = uploaded.images?.length
+            ? [...existingImages, ...uploaded.images]
+            : existingImages;
 
-        // Merge new gallery images with existing ones
-        if (uploaded.images?.length) {
-            const existing = updateData.images ? JSON.parse(updateData.images) : [];
-            updateData.images = [...existing, ...uploaded.images];
-        }
-
-        const jsonFields = ['key_features', 'ingredients', 'nutrition_info', 'manufacturer', 'tags', 'flavors', 'images'];
-        for (const field of jsonFields) {
-            if (updateData[field] && typeof updateData[field] === 'string') {
-                updateData[field] = JSON.parse(updateData[field]);
-            }
-        }
-        if (updateData.stock) updateData.stock = parseInt(updateData.stock);
+        const updateData = {
+            name: req.body.name,
+            slug: req.body.slug,
+            brand: req.body.brand,
+            category: req.body.category,
+            sub_category: toStr(req.body.sub_category),
+            type: toStr(req.body.type),
+            price: req.body.price,
+            discounted_price: toStr(req.body.discounted_price),
+            discount_percentage: toStr(req.body.discount_percentage) ?? '0',
+            currency: toStr(req.body.currency) ?? 'INR',
+            stock: toInt(req.body.stock),
+            low_stock_threshold: toInt(req.body.low_stock_threshold, 5),
+            is_in_stock: toBool(req.body.is_in_stock),
+            sku: toStr(req.body.sku),
+            ...(uploaded.primary_image && { primary_image: uploaded.primary_image }),
+            secondary_image: uploaded.secondary_image || toStr(req.body.secondary_image),
+            images: mergedImages,
+            description: req.body.description,
+            detailed_description: toStr(req.body.detailed_description),
+            key_features: req.body.key_features ? JSON.parse(req.body.key_features) : [],
+            ingredients: req.body.ingredients ? JSON.parse(req.body.ingredients) : [],
+            nutrition_info: req.body.nutrition_info ? JSON.parse(req.body.nutrition_info) : {},
+            shelf_life: toStr(req.body.shelf_life),
+            storage_instructions: toStr(req.body.storage_instructions),
+            care_instructions: toStr(req.body.care_instructions),
+            country_of_origin: toStr(req.body.country_of_origin),
+            manufacturer: req.body.manufacturer ? JSON.parse(req.body.manufacturer) : {},
+            contact_email: toStr(req.body.contact_email),
+            contact_phone: toStr(req.body.contact_phone),
+            amazon_link: toStr(req.body.amazon_link),
+            tags: req.body.tags ? JSON.parse(req.body.tags) : [],
+            flavors: req.body.flavors ? JSON.parse(req.body.flavors) : [],
+            weight: toStr(req.body.weight),
+            is_active: toBool(req.body.is_active),
+            is_featured: toBool(req.body.is_featured),
+        };
 
         const product = await updateProductService(id, updateData);
         if (!product) {
@@ -173,7 +201,17 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
         }
         res.status(200).json({ success: true, data: product });
     } catch (error) {
-        res.status(500).json({ success: false, message: error instanceof Error ? error.message : 'Server error' });
+        const isDbError = error instanceof Error && (
+            error.message.toLowerCase().includes('null value') ||
+            error.message.toLowerCase().includes('violates') ||
+            error.message.toLowerCase().includes('failed query') ||
+            error.message.toLowerCase().includes('unique constraint')
+        );
+        if (isDbError) {
+            res.status(400).json({ success: false, message: 'Failed to update product. Please check all required fields are filled in correctly.' });
+        } else {
+            res.status(500).json({ success: false, message: error instanceof Error ? error.message : 'Server error' });
+        }
     }
 };
 
