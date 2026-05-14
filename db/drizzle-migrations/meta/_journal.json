@@ -43,6 +43,13 @@
       "when": 1778736019017,
       "tag": "0005_lucky_triton",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1778738014516,
+      "tag": "0006_broad_smasher",
+      "breakpoints": true
     }
   ]
 }
