@@ -46,9 +46,34 @@ export const popularSections = pgTable('popular_sections', {
     updated_at: timestamp('updated_at').defaultNow().notNull(),
 });
 
+// ─── Showcase Tea Tags ────────────────────────────────────────────────────────
+export const showcaseTeaTags = pgTable('showcase_tea_tags', {
+    id: serial('id').primaryKey(),
+    name: varchar('name', { length: 100 }).notNull().unique(),
+    sort_order: integer('sort_order').notNull().default(0),
+    created_at: timestamp('created_at').defaultNow().notNull(),
+    updated_at: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// ─── Showcase Tea Products ────────────────────────────────────────────────────
+export const showcaseTeaProducts = pgTable('showcase_tea_products', {
+    id: serial('id').primaryKey(),
+    name: varchar('name', { length: 255 }).notNull(),
+    image_url: varchar('image_url', { length: 500 }).notNull(),
+    tag_id: integer('tag_id').notNull(),
+    product_id: integer('product_id').notNull(),
+    sort_order: integer('sort_order').notNull().default(0),
+    created_at: timestamp('created_at').defaultNow().notNull(),
+    updated_at: timestamp('updated_at').defaultNow().notNull(),
+});
+
 export type HeroBanner = typeof heroBanners.$inferSelect;
 export type NewHeroBanner = typeof heroBanners.$inferInsert;
 export type Spotlight = typeof spotlights.$inferSelect;
 export type NewSpotlight = typeof spotlights.$inferInsert;
 export type PopularSection = typeof popularSections.$inferSelect;
 export type NewPopularSection = typeof popularSections.$inferInsert;
+export type ShowcaseTeaTag = typeof showcaseTeaTags.$inferSelect;
+export type NewShowcaseTeaTag = typeof showcaseTeaTags.$inferInsert;
+export type ShowcaseTeaProduct = typeof showcaseTeaProducts.$inferSelect;
+export type NewShowcaseTeaProduct = typeof showcaseTeaProducts.$inferInsert;

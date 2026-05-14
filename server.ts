@@ -19,6 +19,8 @@ import { publicSpotlightRoutes } from './routes/publicSpotlightRoutes';
 import { adminPopularSectionRoutes } from './routes/adminPopularSectionRoutes';
 import { publicPopularSectionRoutes } from './routes/publicPopularSectionRoutes';
 import { adminOrderRoutes } from './routes/adminOrderRoutes';
+import { adminShowcaseTeaRoutes } from './routes/adminShowcaseTeaRoutes';
+import { publicShowcaseTeaRoutes } from './routes/publicShowcaseTeaRoutes';
 
 dotenv.config();
 
@@ -56,6 +58,8 @@ app.use('/public/spotlights', publicSpotlightRoutes);
 app.use('/admin/popular-sections', adminPopularSectionRoutes);
 app.use('/public/popular-sections', publicPopularSectionRoutes);
 app.use('/admin/orders', adminOrderRoutes);
+app.use('/admin/showcase-tea', adminShowcaseTeaRoutes);
+app.use('/public/showcase-tea', publicShowcaseTeaRoutes);
 
 // Error Handler Middleware (must be last)
 app.use(errorHandler);
